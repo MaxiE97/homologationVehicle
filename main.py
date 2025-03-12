@@ -79,25 +79,38 @@ def init_session_state():
         st.session_state.merged_df = None
     if 'search_term' not in st.session_state:
         st.session_state.search_term = ""
-    # Agregar control para evitar re-renderizado cuando interactúas con la tabla
     if 'grid_has_changes' not in st.session_state:
         st.session_state.grid_has_changes = False
     if 'previous_data' not in st.session_state:
         st.session_state.previous_data = None
-
-    # Opciones de idioma y rutas de plantillas actualizadas a ODT
+    
+    # Inicializar opciones de idioma
     if 'language_options' not in st.session_state:
         st.session_state.language_options = {
             'Inglés': "utils/planillaIngles.odt",
-            'Alemán': "utils/planillaAleman.odt"
-            # Agrega más idiomas y rutas si es necesario
+            'Alemán': "utils/planillaAleman.odt",
+            'Italiano': "utils/planillaItaliano.odt",
+            'Francés': "utils/planillaFrances.odt",
+            'Holandés': "utils/planillaHolandes.odt",
+            'Portugués': "utils/planillaPortugues.odt"
         }
     if 'selected_language' not in st.session_state:
-        st.session_state.selected_language = list(st.session_state.language_options.keys())[0]  # Idioma por defecto
+        st.session_state.selected_language = list(st.session_state.language_options.keys())[0]
+    
+    # Variable para controlar cambio de idioma
+    if 'language_key' not in st.session_state:
+        st.session_state.language_key = 0
+
+def change_language():
+    """Función de callback para cambiar el idioma seleccionado"""
+    # Actualizar la selección de idioma inmediatamente
+    st.session_state.selected_language = st.session_state.temp_language
+    # Incrementar la clave para forzar la recreación del componente
+    st.session_state.language_key += 1
 
 def setup_page():
     """Configura la página y el diseño inicial"""
-    st.set_page_config(layout="wide")
+    st.set_page_config(layout="wide", page_title="Extracción de datos para homologación")
     st.markdown("<h1 style='text-align: center;'>Extracción de datos para homologación</h1>", unsafe_allow_html=True)
 
 def render_url_inputs():
@@ -105,12 +118,12 @@ def render_url_inputs():
     st.subheader("Ingreso de URLs")
     col1, col2 = st.columns(2)
     with col1:
-        url_site1 = st.text_input("URL del Sitio 1 (Página holandesa):", key="url1")
+        url_site1 = st.text_input("URL del Sitio 1 (Página Voertuig):", key="url1")
     with col2:
-        url_site2 = st.text_input("URL del Sitio 2 (Página alemana):", key="url2")
+        url_site2 = st.text_input("URL del Sitio 2 (Página Typenscheine):", key="url2")
     
     # Desplegable para seleccionar la opción de transmisión para site 2
-    st.markdown("**Si 'Type' posee dos opciones en Transmission, por favor seleccionar:**")
+    st.markdown("**En ocasiones, Typenscheine ofrece dos tipos de transmisiones. Si este es el caso, seleccione el tipo que desea. Si solo hay una opción, simplemente elija la opción por defecto.**")
     transmission_option = st.selectbox(
         "Selecciona la opción de transmisión:",
         ("Por defecto", "Manual", "Automático"),
@@ -167,7 +180,8 @@ def render_aggrid(df):
     gb.configure_grid_options(
         suppressFieldDotNotation=True,
         enableCellTextSelection=True,
-        ensureDomOrder=True
+        ensureDomOrder=True,
+        rowBuffer=100  # Mejora el rendimiento con menos filas en buffer
     )
     
     grid_options = gb.build()
@@ -291,14 +305,16 @@ def main():
                 # Actualizar la referencia de datos previos
                 st.session_state.previous_data = grid_response['data'].copy()
             
-            # Seleccionar idioma mediante radio buttons horizontales
+            # SOLUCIÓN PARA PROBLEMA DE IDIOMAS CON SELECTBOX
             st.subheader("Selecciona el idioma para la plantilla:")
-            st.session_state.selected_language = st.radio(
-                label="Selecciona el idioma para la plantilla",
+            
+            # Usar un selectbox para la selección de idioma
+            st.selectbox(
+                "Idioma",
                 options=list(st.session_state.language_options.keys()),
                 index=list(st.session_state.language_options.keys()).index(st.session_state.selected_language),
-                key="language_radio",
-                horizontal=True
+                key="temp_language",
+                on_change=change_language
             )
 
             # Exportar a ODT
@@ -313,7 +329,7 @@ def main():
                         st.download_button(
                             label="📥 Descargar documento ODT",
                             data=doc_bytes,
-                            file_name="datos_exportados.odt",
+                            file_name=f"datos_exportados_{st.session_state.selected_language}.odt",
                             mime="application/vnd.oasis.opendocument.text"
                         )
                         st.success('¡Documento preparado! Haz clic en el botón de descarga para guardarlo.')
