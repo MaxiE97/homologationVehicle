@@ -33,6 +33,7 @@ class VehicleDataTransformer_site2:
         df = self._process_emissions(df)
         df = self._transform_emissions_values(df)
         df = self._process_dimensions(df)
+        df = self._process_engine_details(df)
 
         df = self._add_missing_keys(df)
         df = self._sort_and_clean(df)
@@ -174,6 +175,80 @@ class VehicleDataTransformer_site2:
 
 
             df.loc[df["Key"] == "Maximum net power", "Value"] = new_value
+
+        return df
+    
+
+    def _process_engine_details(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Procesa una cadena de origen para extraer detalles del motor.
+        Modifica la clave 'Working principle' existente y AÑADE NUEVAS FILAS
+        para 'Fuel', 'Direct injection', y 'Number and arrangement of cylinders'.
+        """
+        # --- Configuración de Claves ---
+        # Clave que contiene la cadena original (e.g., "D / 4-Takt / 4 / Reihe-T-DI")
+        # ¡¡IMPORTANTE!! Ajusta esto al nombre correcto en tu DataFrame ANTES de esta función.
+        source_key_name = "Working principle"
+
+        #target_key_wp = "Working principle"
+        target_key_fuel = "Fuel"
+        target_key_di = "Direct injection"
+        target_key_cyl = "Number and arrangement of cylinders"
+
+        new_rows_list = [] # Lista para almacenar las nuevas filas a añadir
+
+        # Verificar si la clave de origen existe
+        if source_key_name in df["Key"].values:
+            source_row_index = df[df["Key"] == source_key_name].index
+            # Asegurarse de que la clave de origen es única antes de proceder
+            if len(source_row_index) == 1:
+                source_value = df.loc[source_row_index[0], "Value"]
+
+                if isinstance(source_value, str) and "/" in source_value:
+                    parts = [part.strip() for part in source_value.split('/')]
+
+                    if len(parts) >= 4:
+                        part1 = parts[0] # 'D' o 'B'
+                        part3 = parts[2] # Número de cilindros, e.g., '4'
+                        part4 = parts[3] # Tipo de inyección/motor, e.g., 'Reihe-T-DI'
+
+                        # 1. Procesar Working Principle (MODIFICAR existente) y Fuel (AÑADIR nuevo)
+                        if part1 == 'D':
+                            df.loc[source_row_index[0], "Value"] = "Common rail" # Modificar WP
+                            new_rows_list.append({"Key": target_key_fuel, "Value": "Diesel"}) # Añadir Fuel
+                        elif part1 == 'B':
+                            df.loc[source_row_index[0], "Value"] = "Spark ignition, 4-stroke" # Modificar WP
+                            new_rows_list.append({"Key": target_key_fuel, "Value": "Petrol"}) # Añadir Fuel
+
+                        # 2. Procesar Direct Injection (AÑADIR nuevo)
+                        if part4 == "Reihe-Inj-T":
+                            new_rows_list.append({"Key": target_key_di, "Value": "Yes"})
+                        else:
+                            # Opcional: ajustar si "DI" en part4 también significa "Yes"
+                            new_rows_list.append({"Key": target_key_di, "Value": "No"})
+
+                        # 3. Procesar Number and arrangement of cylinders (AÑADIR nuevo)
+                        cyl_value = part3 # Valor por defecto si no es un número válido
+                        if part3.isdigit():
+                            num_cyl = int(part3)
+                            if num_cyl in [3, 4, 6]:
+                                cyl_value = f"{num_cyl}, in line"
+                            else:
+                                cyl_value = str(num_cyl)
+                        new_rows_list.append({"Key": target_key_cyl, "Value": cyl_value})
+
+                        # Opcional: Limpiar el valor de la clave fuente si ya no se necesita explícitamente
+                        # Podrías querer borrarlo o dejarlo, ahora que se ha procesado
+                        # df.loc[source_row_index[0], "Value"] = "" # Por ejemplo, para borrarlo
+
+                # else: El valor no tiene el formato esperado
+            # else: La clave de origen no es única (o no se encontró), no hacer nada
+        # else: La clave de origen no se encontró
+
+        # Añadir todas las nuevas filas al DataFrame de una vez si se generaron
+        if new_rows_list:
+            new_rows_df = pd.DataFrame(new_rows_list)
+            df = pd.concat([df, new_rows_df], ignore_index=True)
 
         return df
 
@@ -481,7 +556,7 @@ class VehicleDataTransformer_site2:
             categories=self.config.ordered_keys,
             ordered=True
         )
-        return df.sort_values("Key").head(58).reset_index(drop=True)
+        return df.sort_values("Key").head(64).reset_index(drop=True)
 
     @staticmethod
     def _get_max_value(value: str) -> str:
@@ -527,11 +602,10 @@ DEFAULT_CONFIG_2 = VehicleDataConfig(
         "67 Support load": "Support load",
         "25 Brand / Type": "Brand / Type",
         "27 Capacity:": "Capacity",
-        "Cylinder": "Number and arrangement of cylinders",
-        "Fuel code": "Fuel",
         "28 Power / n": "Maximum net power",
         "18 Transmission/IA": "Transmission/IA",
         "Tow hitch": "EC type approval mark of couplind device if fitted",
+        "26 Design type": "Working principle",
 
     },
     ordered_keys=[
@@ -593,6 +667,12 @@ DEFAULT_CONFIG_2 = VehicleDataConfig(
         "WLTP Fuel consumption High",
         "WLTP Fuel consumption Maximum Value",
         "WLTP Fuel consumption combined",
+        "Steering, method of assistance",
+        "Suspension",
+        "Brakes",
+        "Type of body",
+        "Number and configuration of doors",
+        "Number and position of seats",
 
     ]
 )

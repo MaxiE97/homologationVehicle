@@ -390,7 +390,7 @@ class VehicleDataTransformer_site1:
             categories=self.config.ordered_keys,
             ordered=True
         )
-        return df.sort_values("Key").head(58).reset_index(drop=True)
+        return df.sort_values("Key").head(64).reset_index(drop=True)
 
     @staticmethod
     def _get_max_value(value: str) -> str:
@@ -513,6 +513,12 @@ DEFAULT_CONFIG_1 = VehicleDataConfig(
         "WLTP Fuel consumption High",
         "WLTP Fuel consumption Maximum Value",
         "WLTP Fuel consumption combined",
+        "Steering, method of assistance",
+        "Suspension",
+        "Brakes",
+        "Type of body",
+        "Number and configuration of doors",
+        "Number and position of seats",
 
     ]
 )

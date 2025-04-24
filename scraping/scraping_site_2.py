@@ -24,7 +24,7 @@ class Site2Scraper(BaseScraper):
                 'container_class': 'col-sm-5 cocInfo',
                 'value_class': 'col-sm-7',
                 'identifiers': [
-                    '14 Axles/Wheels', '25 Brand / Type', '27 Capacity:',
+                    '14 Axles/Wheels', '25 Brand / Type', '27 Capacity:','26 Design type',
                     '28 Power / n',  '16 Final drive'
                 ],
                 'next_sibling': True
@@ -32,7 +32,7 @@ class Site2Scraper(BaseScraper):
             {
                 'container_class': 'col-sm-2 cocInfo',
                 'value_class': 'col-sm-2',
-                'identifiers': ['Wet Weigh Kg', 'Cylinder', 'Fuel code'],
+                'identifiers': ['Wet Weigh Kg'],
                 'next_sibling': True,
                 'element_type': 'label'
             }
