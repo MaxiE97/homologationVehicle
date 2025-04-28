@@ -556,7 +556,7 @@ class VehicleDataTransformer_site2:
             categories=self.config.ordered_keys,
             ordered=True
         )
-        return df.sort_values("Key").head(64).reset_index(drop=True)
+        return df.sort_values("Key").head(70).reset_index(drop=True)
 
     @staticmethod
     def _get_max_value(value: str) -> str:
@@ -673,6 +673,12 @@ DEFAULT_CONFIG_2 = VehicleDataConfig(
         "Type of body",
         "Number and configuration of doors",
         "Number and position of seats",
+        "Make",
+        "Type",
+        "Variant",
+        "Version",
+        "Commercial name",
+        "Homologation number",
 
     ]
 )

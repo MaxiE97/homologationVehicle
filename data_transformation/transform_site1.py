@@ -390,7 +390,7 @@ class VehicleDataTransformer_site1:
             categories=self.config.ordered_keys,
             ordered=True
         )
-        return df.sort_values("Key").head(64).reset_index(drop=True)
+        return df.sort_values("Key").head(70).reset_index(drop=True)
 
     @staticmethod
     def _get_max_value(value: str) -> str:
@@ -448,6 +448,13 @@ DEFAULT_CONFIG_1 = VehicleDataConfig(
         "Brandstof #1 - Brandstofverbruik op snelweg NEDC": "NEDC Fuel consumption extra-urban conditions",
         "Brandstof #1 - CO2-uitstoot gecombineerd WLTP": "WLTP CO2 combined",
         "Brandstof #1 - Brandstofverbruik gecombineerd WLTP": "WLTP Fuel consumption combined",
+        "Algemeen - Merk": "Make",
+        "Algemeen - Type": "Type",
+        "Algemeen - Variant": "Variant",
+        "Algemeen - Uitvoering": "Version",
+        "Algemeen - Model": "Commercial name",
+        "Algemeen - Typegoedkeuringsnummer":"Homologation number",
+
 
 
 #29  Brandstof #1 - Brandstofverbruik gecombWLTPineerd   7,9 liter/100 km (12,7 km/liter)
@@ -519,6 +526,13 @@ DEFAULT_CONFIG_1 = VehicleDataConfig(
         "Type of body",
         "Number and configuration of doors",
         "Number and position of seats",
+        "Make",
+        "Type",
+        "Variant",
+        "Version",
+        "Commercial name",
+        "Homologation number",
+
 
     ]
 )
