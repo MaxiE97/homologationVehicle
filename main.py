@@ -160,7 +160,11 @@ def init_session_state():
             'Italiano': "utils/planillaItaliano.odt",
             'Francés': "utils/planillaFrances.odt",
             'Holandés': "utils/planillaHolandes.odt",
-            'Portugués': "utils/planillaPortugues.odt"
+            'Portugués': "utils/planillaPortugues.odt",
+            'Polaco': "utils/planillaPolaco.odt",
+            'Checo': "utils/planillaCheco.odt",
+            'Rumano': "utils/planillaRumania.odt",
+
         }
     if 'selected_language' not in st.session_state:
         st.session_state.selected_language = list(st.session_state.language_options.keys())[0]
